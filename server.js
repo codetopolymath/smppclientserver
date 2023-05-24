@@ -1,10 +1,13 @@
 var smpp = require('smpp');
-const https = require('https');
+var urlencode = require('urlencode');
+var https = require('https');
 
 // call API for sms.maverick server
 function callSMSApi(to) {
-  const url = `https://sms.maverick-dk.com/app/smpp-call?to=${to}`;
-
+  //const url = `https://sms.maverick-dk.com/app/smpp-call?to=${to}`;
+  //const url = `https://sms.demosimplicity.com/app/smpp-call?shootID=0123456789ABCD26&number=${number}&peid=${peid}&cid=${cid}&message=this%20is%20test%20message%20by%20V-Conn&header=BulkAr&ip=${ip}&reportURL=http://143.110.242.221:8080/report&na=0`;
+  const url = `https://sms.demosimplicity.com/app/smpp-call?shootID=0123456789ABCD89&number=${number}&peid=${peid}&cid=${cid}&message=This+is+a+Test+Message+by+V-Con&header=BulkAr&ip=${ip}&reportURL=http://143.110.242.221:8080/report&na=0`;
+  console.log(url);
   https.get(url, (response) => {
     let data = '';
 
@@ -31,7 +34,13 @@ var server = smpp.createServer({
 
 	// SUBMIT_SM
 	session.on("submit_sm", function(pdu) {
-	callSMSApi(pdu.destination_addr);
+	const payload_data = pdu.message_payload.message;
+	var message_payload = JSON.parse(payload_data);
+	console.log(message_payload);
+	//callSMSApi(number=pdu.destination_addr, peid=message_payload.peid, cid=message_payload.cid, ip=message_payload.ip);
+	params = {"number": pdu.destination_addr, "peid": message_payload.peid , "cid": message_payload.cid, "message": urlencode(pdu.short_message.message), "ip": message_payload.ip}
+	console.log(params)
+	callSMSApi(number=params.number, peid=params.peid, cid=params.cid, ip=params.ip);
 });
 
 	// BIND_TRANSCEIVER
