@@ -1,6 +1,7 @@
 var smpp = require('smpp');
 var urlencode = require('urlencode');
 var https = require('https');
+var http = require('http');
 
 // call API for sms.maverick server
 function callSMSApi(to) {
@@ -31,7 +32,8 @@ var server = smpp.createServer({
 	session.on('error', function (err) {
 		console.log(err)
   	});
-
+  	
+  	
 	// SUBMIT_SM
 	session.on("submit_sm", function(pdu) {
 	const payload_data = pdu.message_payload.message;
@@ -45,7 +47,14 @@ var server = smpp.createServer({
 
 	// BIND_TRANSCEIVER
 	session.on('bind_transceiver', function(pdu) {
-		//console.log(pdu);
+	    
+	    // maintain live connections
+	        const ipv4Regex = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/;
+	        var remoteAddress = session.socket.remoteAddress
+	        var IPV4remoteAddress = remoteAddress.match(ipv4Regex)[0];
+	        console.log(`system_id: ${pdu.system_id}, username: ${pdu.password}, remoteAddress: ${IPV4remoteAddress}`);
+	
+		console.log(pdu);
 		// we pause the session to prevent further incoming pdu events,
 		// untill we authorize the session with some async operation.
 		//session.pause();
